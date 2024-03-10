@@ -28,6 +28,7 @@ import torch.optim as optim
 import argparse
 import random
 import numpy as np
+import os
 
 import torchquantum as tq
 from torchquantum.plugin import (
@@ -247,27 +248,36 @@ def main():
     try:
         from qiskit import IBMQ
         from torchquantum.plugin import QiskitProcessor
+        
+        api_key_path = "api_key.txt"
+        if not os.path.exists(api_key_path):
+            raise Exception("Add your api key and provide its filepath in mnist.py:252")
+        api_key = open(api_key_path).read()
+        #IBMQ.save_account(api_key)
 
         # firstly perform simulate
         print(f"\nTest with Qiskit Simulator")
         processor_simulation = QiskitProcessor(use_real_qc=False)
         model.set_qiskit_processor(processor_simulation)
         valid_test(dataflow, "test", model, device, qiskit=True)
-
+        
         # then try to run on REAL QC
-        backend_name = "ibmq_lima"
-        print(f"\nTest on Real Quantum Computer {backend_name}")
-        # Please specify your own hub group and project if you have the
-        # IBMQ premium plan to access more machines.
-        processor_real_qc = QiskitProcessor(
-            use_real_qc=True,
-            backend_name=backend_name,
-            hub="ibm-q",
-            group="open",
-            project="main",
-        )
-        model.set_qiskit_processor(processor_real_qc)
-        valid_test(dataflow, "test", model, device, qiskit=True)
+        # backend_name = "ibm_kyoto"
+        # print(f"\nTest on Real Quantum Computer {backend_name}")
+        # # Please specify your own hub group and project if you have the
+        # # IBMQ premium plan to access more machines.
+        # #provider = IBMQ.enable_account(api_key)
+        # #backends = provider.backends()
+
+        # processor_real_qc = QiskitProcessor(
+        #     use_real_qc=True,
+        #     backend_name=backend_name,
+        #     hub="ibm-q",
+        #     group="open",
+        #     project="main",
+        # )
+        # model.set_qiskit_processor(processor_real_qc)
+        # valid_test(dataflow, "test", model, device, qiskit=True)
     except ImportError:
         print(
             "Please install qiskit, create an IBM Q Experience Account and "
