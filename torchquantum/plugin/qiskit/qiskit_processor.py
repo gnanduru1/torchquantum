@@ -288,7 +288,7 @@ class QiskitProcessor(object):
         q_layer_fixed: tq.QuantumModule,
         q_layer_measure: tq.QuantumModule,
         x,
-        parallel=True,
+        parallel=False,
     ):
         """
         separate the conversion, encoder part will be converted to a
@@ -459,7 +459,7 @@ class QiskitProcessor(object):
         q_layer_measure: tq.QuantumModule,
         x,
         shift_encoder=False,
-        parallel=True,
+        parallel=False,
         shift_this_step=None,
     ):
         """
@@ -683,7 +683,7 @@ class QiskitProcessor(object):
 
         return measured_qiskit
 
-    def process_ready_circs_get_counts(self, circs_all, parallel=True):
+    def process_ready_circs_get_counts(self, circs_all, parallel=False):
         circs_all_transpiled = []
         for circ in tqdm(circs_all):
             circs_all_transpiled.append(self.transpile(circ))
@@ -742,13 +742,13 @@ class QiskitProcessor(object):
             counts = [result.get_counts()]
         return counts
 
-    def process_ready_circs(self, q_device, circs_all, parallel=True):
+    def process_ready_circs(self, q_device, circs_all, parallel=False):
         counts = self.process_ready_circs_get_counts(circs_all, parallel=parallel)
         measured_qiskit = get_expectations_from_counts(counts, n_wires=q_device.n_wires)
         measured_torch = torch.tensor(measured_qiskit)
         return measured_torch
 
-    def process_circs_get_joint_expval(self, circs_all, observable, parallel=True):
+    def process_circs_get_joint_expval(self, circs_all, observable, parallel=False):
         """
         This function is used to compute the joint expectation value of a list of observables
         we add diagonalizing gates before sending them to the backend
