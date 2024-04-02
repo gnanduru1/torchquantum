@@ -1,22 +1,15 @@
 Bootstrap: docker
-From: ubuntu:20.04
-
-%post
-    # Update and install system-wide packages
-    apt-get update && apt-get install -y python3-pip python3-dev git
-
-    # Upgrade pip to ensure we can install all dependencies
-    python3 -m pip install --upgrade pip 
-
-%environment
-    export PATH=/usr/local/bin:$PATH
+From: python:3.10
 
 %files
     requirements.txt /opt/requirements.txt
 
 %post
     # Install the Python packages defined in requirements.txt
+    python3 -m pip install --upgrade pip 
     python3 -m pip install -r /opt/requirements.txt
+    python3 -m pip install ipykernel
+
 
 %runscript
     exec /bin/bash "$@"
