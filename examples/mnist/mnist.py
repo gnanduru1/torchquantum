@@ -251,11 +251,11 @@ def main():
             from qiskit import IBMQ
             from torchquantum.plugin import QiskitProcessor
         
-        api_key_path = "api_key.txt"
-        if not os.path.exists(api_key_path):
-            raise Exception("Add your api key and provide its filepath in mnist.py:252")
-        api_key = open(api_key_path).read()
-        #IBMQ.save_account(api_key)
+            api_key_path = "api_key.txt"
+            if not os.path.exists(api_key_path):
+                raise Exception("Add your api key and provide its filepath in mnist.py:252")
+            api_key = open(api_key_path).read()
+            #IBMQ.save_account(api_key)
 
             # firstly perform simulate
             print(f"\nTest with Qiskit Simulator")
