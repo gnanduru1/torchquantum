@@ -180,6 +180,7 @@ def main():
         "--static", action="store_true", help="compute with " "static mode"
     )
     parser.add_argument("--pdb", action="store_true", help="debug with pdb")
+    parser.add_argument("--qiskit-simulation", action="store_true", help="run on a real quantum computer")
     parser.add_argument(
         "--wires-per-block", type=int, default=2, help="wires per block int static mode"
     )
@@ -244,10 +245,11 @@ def main():
     # test
     valid_test(dataflow, "test", model, device, qiskit=False)
 
-    # run on Qiskit simulator and real Quantum Computers
-    try:
-        from qiskit import IBMQ
-        from torchquantum.plugin import QiskitProcessor
+    if args.qiskit_simulation:
+        # run on Qiskit simulator and real Quantum Computers
+        try:
+            from qiskit import IBMQ
+            from torchquantum.plugin import QiskitProcessor
         
         api_key_path = "api_key.txt"
         if not os.path.exists(api_key_path):
@@ -255,36 +257,33 @@ def main():
         api_key = open(api_key_path).read()
         #IBMQ.save_account(api_key)
 
-        # firstly perform simulate
-        print(f"\nTest with Qiskit Simulator")
-        processor_simulation = QiskitProcessor(use_real_qc=False)
-        model.set_qiskit_processor(processor_simulation)
-        valid_test(dataflow, "test", model, device, qiskit=True)
-        
-        # then try to run on REAL QC
-        # backend_name = "ibm_kyoto"
-        # print(f"\nTest on Real Quantum Computer {backend_name}")
-        # # Please specify your own hub group and project if you have the
-        # # IBMQ premium plan to access more machines.
-        # #provider = IBMQ.enable_account(api_key)
-        # #backends = provider.backends()
+            # firstly perform simulate
+            print(f"\nTest with Qiskit Simulator")
+            processor_simulation = QiskitProcessor(use_real_qc=False)
+            model.set_qiskit_processor(processor_simulation)
+            valid_test(dataflow, "test", model, device, qiskit=True)
 
-        # processor_real_qc = QiskitProcessor(
-        #     use_real_qc=True,
-        #     backend_name=backend_name,
-        #     hub="ibm-q",
-        #     group="open",
-        #     project="main",
-        # )
-        # model.set_qiskit_processor(processor_real_qc)
-        # valid_test(dataflow, "test", model, device, qiskit=True)
-    except ImportError:
-        print(
-            "Please install qiskit, create an IBM Q Experience Account and "
-            "save the account token according to the instruction at "
-            "'https://github.com/Qiskit/qiskit-ibmq-provider', "
-            "then try again."
-        )
+            # then try to run on REAL QC
+            backend_name = "ibmq_lima"
+            print(f"\nTest on Real Quantum Computer {backend_name}")
+            # Please specify your own hub group and project if you have the
+            # IBMQ premium plan to access more machines.
+            processor_real_qc = QiskitProcessor(
+                use_real_qc=True,
+                backend_name=backend_name,
+                hub="ibm-q",
+                group="open",
+                project="main",
+            )
+            model.set_qiskit_processor(processor_real_qc)
+            valid_test(dataflow, "test", model, device, qiskit=True)
+        except ImportError:
+            print(
+                "Please install qiskit, create an IBM Q Experience Account and "
+                "save the account token according to the instruction at "
+                "'https://github.com/Qiskit/qiskit-ibmq-provider', "
+                "then try again."
+            )
 
 
 if __name__ == "__main__":

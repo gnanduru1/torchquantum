@@ -7,11 +7,11 @@
 
 
 <p align="center">
-    <a href="https://github.com/mit-han-lab/torchquantum/blob/master/LICENSE">
-        <img alt="MIT License" src="https://img.shields.io/github/license/mit-han-lab/torchquantum">
-    </a>
     <a href="https://torchquantum.readthedocs.io/">
         <img alt="Documentation" src="https://img.shields.io/readthedocs/torchquantum/main">
+    </a>
+    <a href="https://github.com/mit-han-lab/torchquantum/blob/master/LICENSE">
+        <img alt="MIT License" src="https://img.shields.io/github/license/mit-han-lab/torchquantum">
     </a>
     <a href="https://join.slack.com/t/torchquantum/shared_invite/zt-1ghuf283a-OtP4mCPJREd~367VX~TaQQ">
         <img alt="Chat @ Slack" src="https://img.shields.io/badge/slack-chat-2eb67d.svg?logo=slack">
@@ -25,7 +25,6 @@
     <a href="https://qmlsys.mit.edu">
         <img alt="Website" src="https://img.shields.io/website?up_message=qmlsys&url=https%3A%2F%2Fqmlsys.mit.edu">
     </a>
-
    <a href="https://pypi.org/project/torchquantum/">
         <img alt="Pypi" src="https://img.shields.io/pypi/v/torchquantum">
     </a>
@@ -59,8 +58,8 @@ Researchers on quantum algorithm design, parameterized quantum circuit training,
 Dynamic computation graph, automatic gradient computation, fast GPU support, batch model tersorized processing.
 
 ## News
+- v0.1.8 Available!
 - Check the [dev branch](https://github.com/mit-han-lab/torchquantum/tree/dev) for new latest features on quantum layers and quantum algorithms.
-- v0.1.7 Available!
 - Join our [Slack](https://join.slack.com/t/torchquantum/shared_invite/zt-1ghuf283a-OtP4mCPJREd~367VX~TaQQ) for real time support!
 - Welcome to contribute! Please contact us or post in the Github Issues if you want to have new examples implemented by TorchQuantum or any other questions.
 - Qmlsys website goes online: [qmlsys.mit.edu](https://qmlsys.mit.edu) and [torchquantum.org](https://torchquantum.org)
