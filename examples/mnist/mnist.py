@@ -38,7 +38,7 @@ from torchquantum.plugin import (
     op_history2qiskit_expand_params,
 )
 
-from torchquantum.dataset import MNIST
+from torchquantum.dataset import MNIST, NoisyMNIST
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
 
@@ -129,7 +129,9 @@ class QFCModel(tq.QuantumModule):
             self.q_layer(qdev)
             x = self.measure(qdev)
 
-        x = x.reshape(bsz, 2, 2).sum(-1).squeeze()
+        # x = x.reshape(bsz, 2, 2).sum(-1).squeeze()
+        x = x.reshape(bsz, 4)
+            
         x = F.log_softmax(x, dim=1)
 
         return x
@@ -187,8 +189,20 @@ def main():
     parser.add_argument(
         "--epochs", type=int, default=2, help="number of training epochs"
     )
+    parser.add_argument(
+        "--noise", type=float, default=0, help="std. dev of gaussian noise"
+    )
+
+    # FOR SLURM ARRAY HELP
+    parser.add_argument(
+        "--mult-noise-by", type=float, default=1, help="multiply noise by this number"
+    )
 
     args = parser.parse_args()
+
+    args.noise *= args.mult_noise_by
+
+    print(args)
 
     if args.pdb:
         import pdb
@@ -200,11 +214,12 @@ def main():
     np.random.seed(seed)
     torch.manual_seed(seed)
 
-    dataset = MNIST(
+    dataset = NoisyMNIST(
         root="./mnist_data",
         train_valid_split_ratio=[0.9, 0.1],
-        digits_of_interest=[3, 6],
+        digits_of_interest=[1,3,5,9],
         n_test_samples=75,
+        std_dev=args.noise,
     )
     dataflow = dict()
 
@@ -263,7 +278,8 @@ def main():
             model.set_qiskit_processor(processor_simulation)
             valid_test(dataflow, "test", model, device, qiskit=True)
 
-            # then try to run on REAL QC
+            return
+            # then try to run on REAL QC   
             backend_name = "ibmq_lima"
             print(f"\nTest on Real Quantum Computer {backend_name}")
             # Please specify your own hub group and project if you have the
