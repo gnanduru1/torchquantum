@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 from .mnist import *
+from .noisy_mnist import *
 from .vowel import *
 from .layer_regression import *
 from .vqe import *

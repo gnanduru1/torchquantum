@@ -23,6 +23,8 @@ SOFTWARE.
 """
 
 import torch
+import random
+import numpy as np
 
 from torchpack.datasets.dataset import Dataset
 from torchvision import datasets, transforms
@@ -33,7 +35,7 @@ from torchvision.transforms import InterpolationMode
 import matplotlib.pyplot as plt
 
 
-__all__ = ["MNIST"]
+__all__ = ["NoisyMNIST", "NoisyMNISTDataset"]
 
 
 resize_modes = {
@@ -60,7 +62,8 @@ class NoisyMNISTDataset:
         fashion,
         n_train_samples,
         same_n_samples_each_class=False,
-        std_dev = 0.1,
+        std_dev = 0,
+        seed = 42,
     ):
         self.root = root
         self.split = split
@@ -77,6 +80,10 @@ class NoisyMNISTDataset:
         self.n_train_samples = n_train_samples
         self.fashion = fashion
 
+        torch.manual_seed(seed)
+        random.seed(seed)
+        np.random.seed(seed)
+
         self.n_digits = len(digits_of_interest)
 
         self.same_n_samples_each_class = same_n_samples_each_class
@@ -84,6 +91,7 @@ class NoisyMNISTDataset:
 
         self.load()
         self.n_instance = len(self.data)
+        
 
     def _get_indices(self, subset, n_samples):
         sample_ctr = {}
@@ -237,21 +245,13 @@ class NoisyMNISTDataset:
         digit = self.digits_of_interest.index(self.data[index][1])
 
         noise = torch.randn_like(img)
+
         img = img + self.std_dev * noise
         instance = {"image": img, "digit": digit}
         return instance
 
     def __len__(self) -> int:
         return self.n_instance
-    
-
-    def save_samples(self, n = 5, path = 'torchquantum/samples/'):
-        for i in range(n):
-            item = self.__getitem__(i)
-            image_tensor = item['image'].squeeze()
-            plt.imshow(image_tensor, cmap='gray')
-            plt.title(item['digit'])
-            plt.savefig(f'{path}/img_{i}.png')
 
 
 class NoisyMNIST(Dataset):
@@ -269,6 +269,7 @@ class NoisyMNIST(Dataset):
         n_valid_samples=None,
         fashion=False,
         n_train_samples=None,
+        std_dev=0,
     ):
         self.root = root
 
@@ -288,32 +289,11 @@ class NoisyMNIST(Dataset):
                     n_valid_samples=n_valid_samples,
                     fashion=fashion,
                     n_train_samples=n_train_samples,
+                    std_dev=std_dev,
                 )
                 for split in ["train", "valid", "test"]
             }
         )
 
 
-if __name__ == "__main__":
-    #import pdb
 
-    #pdb.set_trace()
-    mnist = NoisyMNISTDataset(
-        root="mnist_data",
-        split="train",
-        train_valid_split_ratio=[0.9, 0.1],
-        center_crop=28,
-        resize=28,
-        resize_mode="bilinear",
-        binarize=False,
-        binarize_threshold=0.1307,
-        digits_of_interest=tuple(range(10)),
-        n_test_samples=100,
-        n_valid_samples=1000,
-        fashion=False,
-        n_train_samples=10000,
-        std_dev=0.5,
-    )
-    mnist.__getitem__(20)
-    mnist.save_samples(n=10)
-    print("finish")
