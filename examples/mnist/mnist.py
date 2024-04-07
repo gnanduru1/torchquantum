@@ -40,6 +40,15 @@ from torchquantum.plugin import (
 
 from torchquantum.dataset import MNIST, NoisyMNIST
 from torch.optim.lr_scheduler import CosineAnnealingLR
+import sys
+import os
+parent_directory = os.getcwd()
+sys.path.append(parent_directory)
+print(sys.path)
+# import examples
+# from examples import classic_mnist 
+# from classic_mnist import mnist_classical
+# from mnist_classical import ClassicalNN
 
 
 class QFCModel(tq.QuantumModule):
@@ -197,6 +206,9 @@ def main():
     parser.add_argument(
         "--mult-noise-by", type=float, default=1, help="multiply noise by this number"
     )
+    parser.add_argument(
+        "--model_name", type=str, default="QNN", help="Name of model to use, for now either QNN or just ClassicalNN"
+    )
 
     args = parser.parse_args()
 
@@ -213,11 +225,11 @@ def main():
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-
+    digits_of_interest = [1,3,5,9]
     dataset = NoisyMNIST(
         root="./mnist_data",
         train_valid_split_ratio=[0.9, 0.1],
-        digits_of_interest=[1,3,5,9],
+        digits_of_interest=digits_of_interest,
         n_test_samples=75,
         std_dev=args.noise,
     )
@@ -236,7 +248,12 @@ def main():
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    model = QFCModel().to(device)
+    if args.model_name == "QNN":
+        model = QFCModel().to(device)
+    elif args.model_name == "ClassicalNN":
+        model = ClasicalNN(n_classes=len(digits_of_interest)).to(device)
+    else:
+        raise ValueError(f"{args.model_name} not supported yet please add.")
 
     n_epochs = args.epochs
     optimizer = optim.Adam(model.parameters(), lr=5e-3, weight_decay=1e-4)
