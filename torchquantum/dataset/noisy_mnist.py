@@ -50,6 +50,7 @@ class NoisyMNISTDataset:
         self,
         root: str,
         split: str,
+        noise: str,
         train_valid_split_ratio: List[float],
         center_crop,
         resize,
@@ -67,6 +68,7 @@ class NoisyMNISTDataset:
     ):
         self.root = root
         self.split = split
+        self.noise = noise
         self.train_valid_split_ratio = train_valid_split_ratio
         self.data = None
         self.center_crop = center_crop
@@ -235,6 +237,35 @@ class NoisyMNISTDataset:
                     f"Only use the front {self.n_test_samples} " f"images as TEST set."
                 )
 
+    def snp(self, image, prob):
+        # Extract the dimensions of the image tensor
+        batch_size, height, width = image.shape
+        
+        # Create a mask for salt noise (1)
+        salt_mask = torch.rand(batch_size, height, width) < prob/2
+        
+        # Create a mask for pepper noise (0)
+        pepper_mask = torch.rand(batch_size, height, width) < prob/2
+        
+        # Create a mask for pixels to be left unchanged
+        unchanged_mask = ~(salt_mask | pepper_mask)
+        
+        # Create a new tensor with salt and pepper noise applied
+        noisy_image = image.clone()
+        noisy_image[salt_mask] = 1
+        noisy_image[pepper_mask] = 0
+        noisy_image[unchanged_mask] = image[unchanged_mask]
+        return noisy_image
+    
+    def poisson(self, image, strength):
+        scale = (100-strength)/strength
+        img = img.float() * scale
+        lowest = min(torch.min(img), 0)
+        img = torch.poisson(img-lowest) + lowest
+        img = img/scale
+        return img
+    
+    # Can optionally add noise before returning image at index
     def __getitem__(self, index: int):
         img = self.data[index][0]
         if self.binarize:
@@ -244,21 +275,41 @@ class NoisyMNISTDataset:
 
         digit = self.digits_of_interest.index(self.data[index][1])
 
-        noise = torch.randn_like(img)
-
-        img = img + self.std_dev * noise
+        if self.std_dev > 0:
+            if self.noise == "gaussian":
+                noise = torch.randn_like(img)
+                img = img + self.std_dev * noise
+            elif self.noise == "saltandpepper":
+                if self.std_dev > 1:
+                    raise InvalidArgumentException("S&P strength must be a percentage (between 0 and 1)")
+                img = self.snp(img, self.std_dev)
+            elif self.noise == "poisson":
+                if self.std_dev > 1:
+                    raise InvalidArgumentException("Poisson strength must be a percentage (between 0 and 1)")
+                strength = 100*self.std_dev # I did the math in self.poisson using percentages
+                img = self.poisson(self, img, strength)
+            elif self.noise == "speckle":
+                noise = torch.randn_like(img)
+                img = img + img * self.std_dev * noise
+                
+            
         instance = {"image": img, "digit": digit}
         return instance
 
     def __len__(self) -> int:
         return self.n_instance
 
-
+# Types of noise:
+    # Gaussian: std_dev = standard deviation of Gaussian noise. Higher deviation = more noisy
+    # Salt and pepper: std_dev = percentage of pixels turned to salt/pepper (0.5 chance of either)
+    # Poisson: std_dev = factor multiplied to noise
+    # Speckle: std_dev = standard deviation of Gaussian noise. Higher deviation = more noisy
 class NoisyMNIST(Dataset):
     def __init__(
         self,
         root: str,
         train_valid_split_ratio: List[float],
+        noise="gaussian",
         center_crop=28,
         resize=28,
         resize_mode="bilinear",
@@ -278,6 +329,7 @@ class NoisyMNIST(Dataset):
                 split: NoisyMNISTDataset(
                     root=root,
                     split=split,
+                    noise="gaussian",
                     train_valid_split_ratio=train_valid_split_ratio,
                     center_crop=center_crop,
                     resize=resize,

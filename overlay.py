@@ -1,12 +1,28 @@
 from torchquantum.dataset import NoisyMNISTDataset
 import matplotlib.pyplot as plt
 
+FIG_SIZE = (17,7.5)
+
 images = []
 digits = [1,5,9]
+name = 'overlay4'
+# Gaussian increment
+# inc = 0.5
+
+# S & P increment
+#inc = 0.1
+
+# Poisson increment
+# inc = 0.1
+
+# Speckle increment
+inc = 0.5
+
 for i in range(10):
     mnist = NoisyMNISTDataset(
         root="mnist_data",
         split="train",
+        noise="speckle",
         train_valid_split_ratio=[0.9, 0.1],
         center_crop=28,
         resize=28,
@@ -18,7 +34,7 @@ for i in range(10):
         n_valid_samples=1000,
         fashion=False,
         n_train_samples=10000,
-        std_dev=0.5*i,
+        std_dev=inc*i,
     )
     
     
@@ -36,7 +52,7 @@ num_rows = 3
 num_cols = 10
 ind = 0
 # Create a figure and axis
-fig, axes = plt.subplots(num_rows, num_cols, figsize=(20, 6))
+fig, axes = plt.subplots(num_rows, num_cols, figsize=FIG_SIZE)
 
 # Iterate over the axes and images
 for j in range(num_cols):
@@ -64,16 +80,16 @@ for j in range(num_cols):
         ind += 1
 
 # Adjust layout
-plt.subplots_adjust(wspace=0.01, hspace=0.01)
+plt.subplots_adjust(wspace=0.1, hspace=0.1, left=0.01, right=0.99, top=0.875, bottom=0.2)
 
 for j in range(num_cols):
-    axes[num_rows-1, j].set_xlabel(str(round(0.5*j,3)), fontsize=14, labelpad=10)
+    axes[num_rows-1, j].set_xlabel(str(round(inc*j,3)), fontsize=30, labelpad=10)
 
-# Show the grid of images
-plt.suptitle("MNIST Digits with Increasing Degrees of Noise Added")
-# plt.ylabel("Digit")
-# plt.xlabel("Standard Deviation of Gaussian Noise")
-plt.figtext(.5,.95,'Foo Bar', fontsize=18, ha='center')
-plt.figtext(.5,.9,"Standard Deviation of Gaussian Noise",fontsize=18,ha='center')
-plt.savefig('overlay.eps', format='eps')
-plt.savefig('overlay.png')
+plt.figtext(.5,.91,"MNIST Digits with Increasing Degrees of Noise Added",fontsize=40,ha='center')
+plt.figtext(.5,.04,"Standard Deviation of Speckle Noise",fontsize=40,ha='center')
+
+print("Figsize")
+print(fig.get_size_inches())
+
+plt.savefig(name+'.eps', format='eps')
+plt.savefig(name+'.png')
