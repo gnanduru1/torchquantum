@@ -287,7 +287,7 @@ class NoisyMNISTDataset:
                 if self.std_dev > 1:
                     raise InvalidArgumentException("Poisson strength must be a percentage (between 0 and 1)")
                 strength = 100*self.std_dev # I did the math in self.poisson using percentages
-                img = self.poisson(self, img, strength)
+                img = self.poisson(img, strength)
             elif self.noise == "speckle":
                 noise = torch.randn_like(img)
                 img = img + img * self.std_dev * noise
