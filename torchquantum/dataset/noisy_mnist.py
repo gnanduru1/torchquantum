@@ -257,7 +257,7 @@ class NoisyMNISTDataset:
         noisy_image[unchanged_mask] = image[unchanged_mask]
         return noisy_image
     
-    def poisson(self, image, strength):
+    def poisson(self, img, strength):
         scale = (100-strength)/strength
         img = img.float() * scale
         lowest = min(torch.min(img), 0)
