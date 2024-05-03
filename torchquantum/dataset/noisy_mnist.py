@@ -289,6 +289,7 @@ class NoisyMNISTDataset:
                 strength = 100*self.std_dev # I did the math in self.poisson using percentages
                 img = self.poisson(img, strength)
             elif self.noise == "speckle":
+                print("We are using speckle")
                 noise = torch.randn_like(img)
                 img = img + img * self.std_dev * noise
                 
