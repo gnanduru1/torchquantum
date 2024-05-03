@@ -289,7 +289,7 @@ class NoisyMNISTDataset:
                 strength = 100*self.std_dev # I did the math in self.poisson using percentages
                 img = self.poisson(img, strength)
             elif self.noise == "speckle":
-                print("We are using speckle")
+                #print("We are using speckle")
                 noise = torch.randn_like(img)
                 img = img + img * self.std_dev * noise
                 
@@ -324,13 +324,14 @@ class NoisyMNIST(Dataset):
         std_dev=0,
     ):
         self.root = root
+        self.noise=noise
 
         super().__init__(
             {
                 split: NoisyMNISTDataset(
                     root=root,
                     split=split,
-                    noise="gaussian",
+                    noise=self.noise,
                     train_valid_split_ratio=train_valid_split_ratio,
                     center_crop=center_crop,
                     resize=resize,
